@@ -1,8 +1,8 @@
-using System;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 /// <summary>Creates a small note one-and-a-half metres along the user's gaze.</summary>
 public sealed class SpatialPinManager : MonoBehaviour
@@ -17,12 +17,14 @@ public sealed class SpatialPinManager : MonoBehaviour
     private void Start()
     {
         EnsureEditorCamera();
-        headTransform = FindXrealCameraCenter() ?? Camera.main.transform;
+        // The XREAL SDK exposes its headset camera through Unity XR; the XR
+        // Origin camera should be tagged MainCamera by the SDK setup flow.
+        headTransform = Camera.main.transform;
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) || IsXrealTriggerPressed())
+        if ((Keyboard.current?.spaceKey.wasPressedThisFrame ?? false) || IsXrTriggerPressed())
         {
             SpawnPin();
         }
@@ -92,38 +94,21 @@ public sealed class SpatialPinManager : MonoBehaviour
         camera.clearFlags = CameraClearFlags.SolidColor;
     }
 
-    private static Transform FindXrealCameraCenter()
+    private static bool IsXrTriggerPressed()
     {
-        Type inputType = FindType("NRKernal.NRInput");
-        PropertyInfo cameraCenter = inputType?.GetProperty("CameraCenter", BindingFlags.Public | BindingFlags.Static);
-        return cameraCenter?.GetValue(null) as Transform;
-    }
+        var controllers = new List<InputDevice>();
+        InputDevices.GetDevicesWithCharacteristics(
+            InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.HeldInHand,
+            controllers);
 
-    private static bool IsXrealTriggerPressed()
-    {
-        Type inputType = FindType("NRKernal.NRInput");
-        Type buttonType = FindType("NRKernal.ControllerButton");
-        MethodInfo getButtonDown = inputType?.GetMethod("GetButtonDown", BindingFlags.Public | BindingFlags.Static);
-        if (buttonType == null || getButtonDown == null)
+        foreach (InputDevice controller in controllers)
         {
-            return false;
+            if (controller.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed)
+            {
+                return true;
+            }
         }
 
-        try
-        {
-            object trigger = Enum.Parse(buttonType, "TRIGGER");
-            return (bool)getButtonDown.Invoke(null, new[] { trigger });
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
-    private static Type FindType(string fullName)
-    {
-        return AppDomain.CurrentDomain.GetAssemblies()
-            .Select(assembly => assembly.GetType(fullName, false))
-            .FirstOrDefault(type => type != null);
+        return false;
     }
 }

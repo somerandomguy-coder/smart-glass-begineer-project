@@ -1,18 +1,21 @@
 # Smart Glass Spatial Pin
 
-A minimal XREAL/NRSDK Unity starter. In the Unity Editor, press **Space** to create a world-space note 1.5 metres in front of the camera. The note remains fixed when the camera moves.
+A minimal Unity XR/XREAL SDK 3.1 starter, targeting Unity 6.6. In the Unity Editor, press **Space** to create a world-space note 1.5 metres in front of the camera. The note remains fixed when the camera moves.
 
 ## Local setup
 
-1. Install **Unity Hub** and install **Unity 2022.3 LTS** with **Android Build Support**, **Android SDK & NDK Tools**, and **OpenJDK** selected.
-2. In Unity Hub, add this repository folder as a project and open it with Unity 2022.3 LTS.
-3. Download `NRSDKForUnity_2.4.1.unitypackage` from the [official XREAL download page](https://developer.xreal.com/download/), accepting XREAL's terms where prompted.
-4. In Unity, choose **Assets → Import Package → Custom Package**, select the downloaded package, then import all assets.
-5. Open `Assets/Scenes/SpatialPinDemo.unity` and press Play. Hold the right mouse button to look around in the XREAL simulator; press Space to pin a note.
+1. Install **Unity Hub** and Unity **6.6 (6000.6.4f1)** with **Android Build Support**, **Android SDK & NDK Tools**, and **OpenJDK** selected.
+2. In Unity Hub, add this repository folder as a project and open it with Unity 6.6.
+3. Download **XREAL SDK for Unity 3.1.0** from the [official XREAL download page](https://developer.xreal.com/download/), accepting XREAL's terms where prompted.
+4. In Unity, choose **Assets → Import Package → Custom Package**, select the XREAL SDK package, and import all assets and dependency packages it requests.
+5. In **Edit → Project Settings → XR Plug-in Management**, enable the XREAL provider for Android. Add an XR Origin/XR Camera from the SDK's sample or setup flow, tagged `MainCamera`.
+6. Open `Assets/Scenes/SpatialPinDemo.unity` and press Play. Press Space to pin a note; a connected XREAL controller trigger also pins a note through Unity XR input.
+
+The project includes Unity's Input System package for Unity 6.6. If Unity asks, allow it to enable the new Input System and restart the editor.
 
 ## Android build settings
 
-After importing NRSDK, open **Edit → Project Settings → Player → Android** and confirm:
+After importing XREAL SDK 3.1, open **Edit → Project Settings → Player → Android** and confirm:
 
 - Color Space: `Linear`
 - Scripting Backend: `IL2CPP`
@@ -24,4 +27,4 @@ Then choose **File → Build Settings**, switch to Android, and select **Build a
 ## Notes
 
 - The project intentionally does not commit the XREAL `.unitypackage`: it is a vendor download governed by XREAL's terms. Importing it creates the SDK assets locally.
-- `SpatialPinManager` uses reflection for optional NRSDK controller input, so this repository remains playable in Unity before the SDK package is imported. It uses the XREAL `CameraCenter` and controller trigger automatically when the SDK is present.
+- XREAL SDK 3.x uses Unity XR, not the older `NRKernal`/`NRInput` API. `SpatialPinManager` uses the standard XR controller trigger, avoiding a vendor-specific input dependency.
