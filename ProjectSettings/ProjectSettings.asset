@@ -1,0 +1,160 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 26
+  productGUID: 70b0bf4ce1f64e2abef7fc35d42cc9e8
+  AndroidMinSdkVersion: 29
+  AndroidTargetSdkVersion: 0
+  AndroidPreferredInstallLocation: 1
+  AndroidEnableArmv9SecurityFeatures: 0
+  AndroidTargetArchitectures: 2
+  AndroidEnableIL2CPPStacktraceInformation: 1
+  m_ScriptingBackend:
+    Android: 1
+  m_ColorSpace: 1
+  applicationIdentifier:
+    Android: com.somerandomguycoder.smartglassspatialpin
+  m_CompanyName: DefaultCompany
+  productName: Smart Glass Spatial Pin
+  defaultScreenWidth: 1280
+  defaultScreenHeight: 720
+*** Add File: Assets/Scripts/SpatialPinManager.cs
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Pins a small world-space note in the user's gaze direction.
+/// The XREAL/NRSDK integration is discovered at runtime, so this scene also
+/// plays in a clean Unity editor before NRSDK is imported.
+/// </summary>
+public sealed class SpatialPinManager : MonoBehaviour
+{
+    [Header("Configuration")]
+    [SerializeField, Min(0.1f)] private float spawnDistance = 1.5f;
+    [SerializeField] private Color noteColor = new Color(0.08f, 0.1f, 0.14f, 0.94f);
+
+    private Transform headTransform;
+    private int pinCount;
+
+    private void Start()
+    {
+        EnsureEditorCamera();
+        headTransform = FindXrealCameraCenter() ?? Camera.main.transform;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) || IsXrealTriggerPressed())
+        {
+            SpawnPin();
+        }
+    }
+
+    private void SpawnPin()
+    {
+        if (headTransform == null)
+        {
+            return;
+        }
+
+        Vector3 position = headTransform.position + headTransform.forward * spawnDistance;
+        Quaternion rotation = Quaternion.LookRotation(position - headTransform.position);
+        GameObject note = CreateNoteCard($"Spatial Pin #{++pinCount}");
+        note.transform.SetPositionAndRotation(position, rotation);
+    }
+
+    private GameObject CreateNoteCard(string message)
+    {
+        var root = new GameObject(message, typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        var canvas = root.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = Camera.main;
+
+        var rect = root.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(400f, 250f);
+        rect.localScale = Vector3.one * 0.002f;
+
+        var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(root.transform, false);
+        panel.GetComponent<RectTransform>().anchorMin = Vector2.zero;
+        panel.GetComponent<RectTransform>().anchorMax = Vector2.one;
+        panel.GetComponent<RectTransform>().offsetMin = Vector2.zero;
+        panel.GetComponent<RectTransform>().offsetMax = Vector2.zero;
+        panel.GetComponent<Image>().color = noteColor;
+
+        var label = new GameObject("Label", typeof(RectTransform), typeof(Text));
+        label.transform.SetParent(panel.transform, false);
+        var labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(28f, 28f);
+        labelRect.offsetMax = new Vector2(-28f, -28f);
+        var text = label.GetComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.text = message;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.fontSize = 38;
+        text.color = Color.cyan;
+
+        return root;
+    }
+
+    private static void EnsureEditorCamera()
+    {
+        if (Camera.main != null)
+        {
+            return;
+        }
+
+        var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
+        cameraObject.tag = "MainCamera";
+        cameraObject.transform.SetPositionAndRotation(new Vector3(0f, 1.6f, 0f), Quaternion.identity);
+        cameraObject.GetComponent<Camera>().backgroundColor = new Color(0.015f, 0.02f, 0.04f);
+        cameraObject.GetComponent<Camera>().clearFlags = CameraClearFlags.SolidColor;
+    }
+
+    private static Transform FindXrealCameraCenter()
+    {
+        Type inputType = FindType("NRKernal.NRInput");
+        PropertyInfo cameraCenter = inputType?.GetProperty("CameraCenter", BindingFlags.Public | BindingFlags.Static);
+        return cameraCenter?.GetValue(null) as Transform;
+    }
+
+    private static bool IsXrealTriggerPressed()
+    {
+        Type inputType = FindType("NRKernal.NRInput");
+        Type buttonType = FindType("NRKernal.ControllerButton");
+        if (inputType == null || buttonType == null)
+        {
+            return false;
+        }
+
+        MethodInfo getButtonDown = inputType.GetMethod("GetButtonDown", BindingFlags.Public | BindingFlags.Static);
+        if (getButtonDown == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            object trigger = Enum.Parse(buttonType, "TRIGGER");
+            return (bool)getButtonDown.Invoke(null, new[] { trigger });
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    private static Type FindType(string fullName)
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .Select(assembly => assembly.GetType(fullName, false))
+            .FirstOrDefault(type => type != null);
+    }
+}
