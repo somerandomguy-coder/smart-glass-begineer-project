@@ -28,6 +28,12 @@
 *.pdb.meta
 *.mdb.meta
 
+# Local vendor downloads and Unity's temporary migration output
+Packages/ThirdParty/*.tgz
+Backup/
+UpgradeLog*.htm
+unity-validation.log
+
 # OS/editor files
 .vs/
 .idea/

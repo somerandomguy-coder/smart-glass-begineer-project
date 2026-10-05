@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR;
+using XrCommonUsages = UnityEngine.XR.CommonUsages;
+using XrInputDevice = UnityEngine.XR.InputDevice;
 
 /// <summary>Creates a small note one-and-a-half metres along the user's gaze.</summary>
 public sealed class SpatialPinManager : MonoBehaviour
@@ -96,14 +98,14 @@ public sealed class SpatialPinManager : MonoBehaviour
 
     private static bool IsXrTriggerPressed()
     {
-        var controllers = new List<InputDevice>();
+        var controllers = new List<XrInputDevice>();
         InputDevices.GetDevicesWithCharacteristics(
             InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.HeldInHand,
             controllers);
 
-        foreach (InputDevice controller in controllers)
+        foreach (XrInputDevice controller in controllers)
         {
-            if (controller.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed)
+            if (controller.TryGetFeatureValue(XrCommonUsages.triggerButton, out bool pressed) && pressed)
             {
                 return true;
             }
