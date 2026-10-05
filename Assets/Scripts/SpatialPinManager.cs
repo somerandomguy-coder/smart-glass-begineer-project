@@ -94,6 +94,12 @@ public sealed class SpatialPinManager : MonoBehaviour
         Camera camera = cameraObject.GetComponent<Camera>();
         camera.backgroundColor = new Color(0.015f, 0.02f, 0.04f);
         camera.clearFlags = CameraClearFlags.SolidColor;
+
+#if UNITY_EDITOR
+        // The temporary camera exists only to make the starter scene testable
+        // before an XREAL XR Origin has been added.
+        cameraObject.AddComponent<EditorFlyCameraController>();
+#endif
     }
 
     private static bool IsXrTriggerPressed()

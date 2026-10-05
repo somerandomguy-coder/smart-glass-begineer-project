@@ -11,6 +11,10 @@ A minimal Unity XR/XREAL SDK 3.1 starter, targeting Unity 6.6. In the Unity Edit
 5. In **Edit → Project Settings → XR Plug-in Management**, enable the XREAL provider for Android. Add an XR Origin/XR Camera from the SDK's sample or setup flow, tagged `MainCamera`.
 6. Open `Assets/Scenes/SpatialPinDemo.unity` and press Play. Press Space to pin a note; a connected XREAL controller trigger also pins a note through Unity XR input.
 
+### Editor simulator controls
+
+The starter creates a temporary camera only when no XR camera exists. In the **Game** tab while playing, hold the right mouse button to look around and use **W/A/S/D** to move, **Q/E** to move down/up, and **Left Shift** to move faster. Pins remain at the location where you created them.
+
 The project includes Unity's Input System package for Unity 6.6. If Unity asks, allow it to enable the new Input System and restart the editor.
 
 ## Android build settings
