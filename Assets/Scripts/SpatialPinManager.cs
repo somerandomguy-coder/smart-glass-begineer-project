@@ -14,6 +14,7 @@ public sealed class SpatialPinManager : MonoBehaviour
     [SerializeField] private Color noteColor = new Color(0.08f, 0.1f, 0.14f, 0.94f);
 
     private Transform headTransform;
+    private Text statusText;
     private int pinCount;
 
     private void Start()
@@ -22,6 +23,7 @@ public sealed class SpatialPinManager : MonoBehaviour
         // The XREAL SDK exposes its headset camera through Unity XR; the XR
         // Origin camera should be tagged MainCamera by the SDK setup flow.
         headTransform = Camera.main.transform;
+        CreateHeadUpDisplay();
     }
 
     private void Update()
@@ -41,8 +43,58 @@ public sealed class SpatialPinManager : MonoBehaviour
 
         Vector3 position = headTransform.position + headTransform.forward * spawnDistance;
         GameObject note = CreateNoteCard($"Spatial Pin #{++pinCount}");
-        // A Canvas renders from its local-forward side, so point it back at the user.
-        note.transform.SetPositionAndRotation(position, Quaternion.LookRotation(headTransform.position - position));
+        // A world-space Canvas renders its visible side toward local -Z. Point
+        // local +Z away from the user so the text faces the user's gaze.
+        note.transform.SetPositionAndRotation(position, Quaternion.LookRotation(position - headTransform.position));
+        SetStatus($"PIN {pinCount} PLACED  •  LOOK AROUND");
+    }
+
+    /// <summary>
+    /// Adds simple glasses-style feedback that is useful in both the Editor
+    /// simulator and an Android/XREAL build. It is created in code so there is
+    /// no prefab wiring for a first-time Unity user to manage.
+    /// </summary>
+    private void CreateHeadUpDisplay()
+    {
+        var canvasObject = new GameObject("Smart Glass HUD", typeof(Canvas), typeof(CanvasScaler));
+        Canvas canvas = canvasObject.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100;
+
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+        var reticle = new GameObject("Aim Reticle", typeof(RectTransform), typeof(Image));
+        reticle.transform.SetParent(canvasObject.transform, false);
+        RectTransform reticleRect = reticle.GetComponent<RectTransform>();
+        reticleRect.anchorMin = reticleRect.anchorMax = new Vector2(0.5f, 0.5f);
+        reticleRect.sizeDelta = new Vector2(12f, 12f);
+        reticle.GetComponent<Image>().color = Color.cyan;
+
+        var status = new GameObject("Placement Status", typeof(RectTransform), typeof(Text));
+        status.transform.SetParent(canvasObject.transform, false);
+        RectTransform statusRect = status.GetComponent<RectTransform>();
+        statusRect.anchorMin = new Vector2(0.5f, 0.5f);
+        statusRect.anchorMax = new Vector2(0.5f, 0.5f);
+        statusRect.anchoredPosition = new Vector2(0f, -82f);
+        statusRect.sizeDelta = new Vector2(900f, 80f);
+
+        statusText = status.GetComponent<Text>();
+        statusText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        statusText.fontSize = 27;
+        statusText.fontStyle = FontStyle.Bold;
+        statusText.alignment = TextAnchor.MiddleCenter;
+        statusText.color = new Color(0.4f, 1f, 1f, 0.92f);
+        SetStatus("PIN READY  •  SPACE / CONTROLLER TRIGGER");
+    }
+
+    private void SetStatus(string message)
+    {
+        if (statusText != null)
+        {
+            statusText.text = message;
+        }
     }
 
     private GameObject CreateNoteCard(string message)
