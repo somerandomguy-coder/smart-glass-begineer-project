@@ -30,6 +30,7 @@
 
 # Local vendor downloads and Unity's temporary migration output
 Packages/ThirdParty/*.tgz
+Packages/ThirdParty/com.xreal.xr/
 Backup/
 UpgradeLog*.htm
 unity-validation.log

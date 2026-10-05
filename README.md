@@ -7,7 +7,7 @@ A minimal Unity XR/XREAL SDK 3.1 starter, targeting Unity 6.6. In the Unity Edit
 1. Install **Unity Hub** and Unity **6.6 (6000.6.4f1)** with **Android Build Support**, **Android SDK & NDK Tools**, and **OpenJDK** selected.
 2. In Unity Hub, add this repository folder as a project and open it with Unity 6.6.
 3. Download **XREAL SDK for Unity 3.1.0** from the [official XREAL download page](https://developer.xreal.com/download/), accepting XREAL's terms where prompted. Rename the downloaded tarball to `com.xreal.xr.tgz` if necessary.
-4. Place that file at `Packages/ThirdParty/com.xreal.xr.tgz`, then reopen Unity. The manifest already references this local XREAL package. The tarball is deliberately ignored by Git because it is a vendor download governed by XREAL's terms.
+4. Place that file at `Packages/ThirdParty/com.xreal.xr.tgz`, then extract it into `Packages/ThirdParty/com.xreal.xr` so that folder contains `package.json`. The manifest references this local XREAL package. The vendor files are deliberately ignored by Git because they are governed by XREAL's terms.
 5. In **Edit → Project Settings → XR Plug-in Management**, enable the XREAL provider for Android. Add an XR Origin/XR Camera from the SDK's sample or setup flow, tagged `MainCamera`.
 6. Open `Assets/Scenes/SpatialPinDemo.unity` and press Play. Press Space to pin a note; a connected XREAL controller trigger also pins a note through Unity XR input.
 
