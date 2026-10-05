@@ -9,6 +9,8 @@
     "com.unity.textmeshpro": "5.0.0",
     "com.unity.timeline": "6.6.0",
     "com.unity.ugui": "2.6.0",
+    "com.unity.xr.arcore": "6.4.1",
+    "com.unity.xr.arfoundation": "6.4.1",
     "com.xreal.xr": "file:ThirdParty/com.xreal.xr",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",

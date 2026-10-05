@@ -17,6 +17,18 @@ The starter creates a temporary camera only when no XR camera exists. In the **G
 
 The project includes Unity's Input System package for Unity 6.6. If Unity asks, allow it to enable the new Input System and restart the editor.
 
+## Phone AR mode (Android + ARCore)
+
+This repository also includes a phone-based AR version of the same experience. It uses the phone camera to find a real floor or table; the reticle turns green when a surface can receive a pin, and tapping the screen creates the pin. Pins remain in place for the current app session.
+
+1. Reopen Unity and allow Package Manager to download **AR Foundation 6.4.1** and **Google ARCore XR Plug-in 6.4.1**.
+2. Select **Tools → Smart Glass → Create Phone AR Scene**. This creates `Assets/Scenes/PhoneARPinDemo.unity` with the required AR Session, XR Origin, AR camera, plane detection, and tap-to-place code.
+3. Open **Edit → Project Settings → XR Plug-in Management → Android**. Enable **ARCore** for the phone build. Disable the XREAL loader while making the phone build: each Android build should use the tracking provider for its intended device.
+4. Add `PhoneARPinDemo` to **File → Build Profiles → Scene List**, make it the enabled scene, and use **Build and Run** on an ARCore-supported Android phone with USB debugging enabled.
+5. When the app opens, slowly point the phone at a well-lit floor or table. An amber reticle means no detected surface yet; green means you can tap to place a note.
+
+The PC/XREAL simulator scene remains `Assets/Scenes/SpatialPinDemo.unity`. Switch the Android loader back to XREAL before making a glasses build.
+
 ## Android build settings
 
 After importing XREAL SDK 3.1, open **Edit → Project Settings → Player → Android** and confirm:
